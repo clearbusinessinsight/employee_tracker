@@ -1,29 +1,47 @@
-const { prompt } = require("inquirer");
-const db = require("./db");
-require("console.table");
+const inquirer = require('inquirer');
+const connection = require('./db/connection');
+const cTable = require('console.table');
 
-// Display logo text, load main prompts
-function init() {
-  // loadPrompts();
-   const Questions = [{
-    type: "list",
-    name: "action",
-    message: "What would you like to do?",
+
+function newPrompt () {
+  const promptChoices = [{
+    type: 'list',
+    name: 'choices',
+    message: 'What would you like to do?',
     loop: false,
-    choices: ["View Employees", "View Roles", "View Departments", "Add Employee", "Add Role", "Add Department", "Change Employee Role", "Change Employee's Manager", "View Employees by Manager", "Delete Department", "Delete a Role", "Delete an Employee", "View the Budget of a Department", "Quit"]
+    choices: [
+      'View All Employees',
+      'View All Roles',
+      'View All Departments',
+      'View Employees by Manager',
+      'View the Budget of a Department',
+      'Add Employee',
+      'Add Role',
+      'Add Department',
+      'Change Employee Role',
+      'Change Employees Manager',
+      'Delete Department',
+      'Delete a Role',
+      'Delete an Employee',
+      'Quit']
   }]
-  
-  inquier.prompt(Questions)
+     inquier.prompt(promptChoices)
   .then(response => {
     switch (response.action) {
-      case "View Employees":
+      case 'View All Employees':
         viewAll("EMPLOYEE");
         break;
-      case "View Roles":
+      case 'View All Roles':
         viewAll("ROLE");
         break;
-      case "View Departments":
+      case 'View All Departments':
         viewAll("DEPARTMENT");
+        break;
+      case 'ViewEmployees by Manager':
+        viewEmployeeByManager();
+        break;
+      case 'View the Budget of a Department':
+        viewBudget();
         break;
       case "Add Department":
         addNewDepartment();
@@ -37,9 +55,6 @@ function init() {
       case "Change Employee Role":
         updateRole();
         break;
-      case "View Employees by Manager":
-        viewEmployeeByManager();
-        break;
       case "Change Employee's Manager":
         updateManager();
         break;
@@ -52,11 +67,6 @@ function init() {
       case "Delete an Employee":
         deleteEmployee();
         break;
-      case "View the Budget of a Department":
-        viewBudget();
-        break;
-      case "Quit":
-        quit();
       default:
         connection.end();
     }
@@ -65,6 +75,11 @@ function init() {
     console.error(err);
   });
 }
+  
+
+
+
+
 
 // Exit the application
 function quit() {
