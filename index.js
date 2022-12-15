@@ -20,7 +20,6 @@ connection.connect((err) => {
 });
 
 
-
 function newPrompt () {
   const promptChoices = [{
     type: 'list',
