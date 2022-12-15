@@ -7,10 +7,10 @@
     "start": "node index.js"
   },
   "author": "Chris Holtz",
-  "license": "ISC",
+  "license": "open",
   "dependencies": {
     "console.table": "^0.10.0",
-    "inquirer": "8.2.4",
-    "mysql2": "^2.1.0"
+    "inquirer": "7.3.3",
+    "mysql": "^2.18.1"
   }
 }
