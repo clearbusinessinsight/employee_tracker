@@ -73,8 +73,9 @@ function newPrompt () {
   .catch(error => {
     console.error(error);
   });
-}
-  
+};
+
+//  View Employee
 const viewEmployee = () => {
   let query;
   query = `SELECT E.id AS id, E.first_name AS first_name, E.last_name AS last_name, 
@@ -90,7 +91,9 @@ const viewEmployee = () => {
     newPrompt();
   });
 };
-  
+
+
+//  View Department
 const viewDepartment = () => {
   let query;
 query = `SELECT * FROM DEPARTMENT`;
@@ -103,6 +106,7 @@ query = `SELECT * FROM DEPARTMENT`;
   });
 };
 
+// View Role
 const viewRole = () => {
   let query;
  query = `SELECT R.id AS id, title, salary, D.name AS department
@@ -117,7 +121,9 @@ const viewRole = () => {
   });
 };
 
-const viewEmployeeByManager =  () => {
+
+//  View Employee by Manager
+const viewEmployeeByManager = () => {
   connection.query("SELECT * FROM EMPLOYEE", (error, employeeRes) => {
     if (error) throw err;
     const employeeChoice = [{
@@ -136,7 +142,7 @@ const viewEmployeeByManager =  () => {
         type: "list",
         name: "manager_id",
         choices: employeeChoice,
-         message: "Who do you want to update?"
+        message: "Who do you want to update?"
       },
     ]
   
@@ -177,9 +183,31 @@ const viewEmployeeByManager =  () => {
       })
       .catch(error => {
         console.error(error);
-      }); 
+      });
   });
-}
+};
+
+
+ //View the Budget of a Department
+       
+ //Add Department
+      
+ // Add Role":
+      
+ //  Add Employee":
+        
+//  Change Employee Role
+      
+// Change Employee's Manager":
+     
+// Delete Department
+      
+//  Delete a Role":
+  
+
+// Delete an Employee":
+       
+     
 
 
 
