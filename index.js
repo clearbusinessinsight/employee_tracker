@@ -13,8 +13,8 @@ const connection = mysql.createConnection({
   database: "employees"
 });
 
-connection.connect((err) => {
-  if (err) throw err;
+connection.connect((error) => {
+  if (error) throw error;
   console.log(`connected as id ${connection.threadId}\n`);
   newPrompt();
 });
@@ -23,7 +23,7 @@ connection.connect((err) => {
 function newPrompt () {
   const promptChoices = [{
     type: 'list',
-    name: 'choices',
+    name: 'mklist',
     message: 'What would you like to do?',
     loop: false,
     choices: [
@@ -36,7 +36,7 @@ function newPrompt () {
       "Add Role",
       "Add Department",
       "Change Employee Role",
-      "Change Employees Manager",
+      "Change Employee's Manager",
       "Delete Department",
       "Delete a Role",
       "Delete an Employee",
@@ -44,7 +44,7 @@ function newPrompt () {
   }]
      inquirer.prompt(promptChoices)
   .then(response => {
-    switch (response.choices) {
+    switch (response.mklist) {
       case 'View All Employees':
         viewEmployee();
         break;
@@ -105,8 +105,8 @@ const viewEmployee = () => {
                                     LEFT JOIN DEPARTMENT AS Department ON Role.department_id = Department.id
                                     LEFT JOIN EMPLOYEE AS Manager ON Employee.manager_id = Manager.id;`;
   
-  connection.query(query, (err, res) => {
-    if (err) throw err;
+  connection.query(query, (error, res) => {
+    if (error) throw error;
     console.table(res);
 
     newPrompt();
@@ -130,9 +130,9 @@ query = `SELECT * FROM DEPARTMENT`;
 // View Role
 const viewRole = () => {
   let query;
- query = `SELECT Role.id AS id, title, salary, Department.name AS department
-          FROM ROLE AS Role LEFT JOIN DEPARTMENT AS Department
-          ON Role.department_id = Department.id;`;
+  query = `SELECT Role.id AS id, title, salary, 
+            Department.name AS department FROM ROLE AS Role LEFT JOIN DEPARTMENT AS Department
+            ON Role.department_id = Department.id;`;
   
   connection.query(query, (error, res) => {
     if (error) throw error;
@@ -145,30 +145,29 @@ const viewRole = () => {
 //  View Employee by Manager
 
 const viewEmployeeByManager =  () => {
-  //get all the employee list 
-  connection.query("SELECT * FROM EMPLOYEE", (err, emplRes) => {
-    if (err) throw err;
-    const employeeChoice = [{
+  connection.query("SELECT * FROM EMPLOYEE", (error, employeeRes) => {
+    if (error) throw error;
+    const eChoice = [{
       name: 'None',
       value: 0
     }];
-    emplRes.forEach(({ first_name, last_name, id }) => {
-      employeeChoice.push({
+    employeeRes.forEach(({ first_name, last_name, id }) => {
+      eChoice.push({
         name: first_name + " " + last_name,
         value: id
       });
     });
      
-    let questions = [
+    let ask = [
       {
         type: "list",
         name: "manager_id",
-        choices: employeeChoice,
-         message: "whose role do you want to update?"
+        choices: eChoice,
+         message: "Whose role do you want to update?"
       },
     ]
   
-    inquirer.prompt(questions)
+    inquirer.prompt(ask)
       .then(response => {
         let manager_id, query;
         if (response.manager_id) {
@@ -177,31 +176,32 @@ const viewEmployeeByManager =  () => {
                           Employee.last_name AS last_name, 
                           Role.title AS role, 
                           Department.name AS department, 
-                          CONCAT(Manager.first_name, " ", Manager.last_name) AS manager
-                  FROM EMPLOYEE AS Employee LEFT JOIN ROLE AS Role ON Employee.role_id = Role.id
-                                            LEFT JOIN DEPARTMENT AS Department ON Role.department_id = Department.id
-                                            LEFT JOIN EMPLOYEE AS Manager ON Employee.manager_id = Manager.id
-                  WHERE E.manager_id = ?;`;
+                          CONCAT(Manager.first_name, " ", Manager.last_name) AS manager FROM EMPLOYEE AS Employee 
+                          LEFT JOIN ROLE AS Role ON Employee.role_id = Role.id
+                          LEFT JOIN DEPARTMENT AS Department ON Role.department_id = Department.id
+                          LEFT JOIN EMPLOYEE AS Manager ON Employee.manager_id = Manager.id
+                  WHERE Employee.manager_id = ?;`;
         } else {
           manager_id = null;
           query = `SELECT Employee.id AS id, 
                           Employee.first_name AS first_name, 
                           Employee.last_name AS last_name, 
                           Role.title AS role, 
-                          Department.name AS department, CONCAT(Manager.first_name, " ", Manager.last_name) AS manager
-                  FROM EMPLOYEE AS Employee LEFT JOIN ROLE AS Role ON Employee.role_id = Role.id
-                                            LEFT JOIN DEPARTMENT AS Department ON Role.department_id = Department.id
-                                            LEFT JOIN EMPLOYEE AS Manager ON Employee.manager_id = Manager.id
+                          Department.name AS department, 
+                          CONCAT(Manager.first_name, " ", 
+                          Manager.last_name) AS manager FROM EMPLOYEE AS Employee LEFT JOIN ROLE AS Role ON Employee.role_id = Role.id
+                          LEFT JOIN DEPARTMENT AS Department ON Role.department_id = Department.id
+                          LEFT JOIN EMPLOYEE AS Manager ON Employee.manager_id = Manager.id
                   WHERE Employee.manager_id is null;`;
         }
-        connection.query(query, [response.manager_id], (err, res) => {
-          if (err) throw err;
+        connection.query(query, [response.manager_id], (error, res) => {
+          if (error) throw error;
           console.table(res);
           newPrompt();
         });
       })
-      .catch(err => {
-        console.error(err);
+      .catch(error => {
+        console.error(error);
       }); 
   });
 }
@@ -221,7 +221,7 @@ const viewEmployeeByManager =  () => {
       });
     });
 
-    let questions = [
+    let ask = [
       {
         type: "list",
         name: "id",
@@ -230,7 +230,7 @@ const viewEmployeeByManager =  () => {
       }
     ];
 
-    inquirer.prompt(questions)
+    inquirer.prompt(ask)
     .then(response => {
       const query = `SELECT Department.name, 
                      SUM(salary) AS budget FROM EMPLOYEE AS Employee
@@ -251,7 +251,7 @@ const viewEmployeeByManager =  () => {
 };
  //Add Department
 const addNewDepartment = () => {
-  let questions = [
+  let ask = [
     {
       type: "input",
       name: "name",
@@ -259,17 +259,17 @@ const addNewDepartment = () => {
     }
   ];
 
-  inquirer.prompt(questions)
+  inquirer.prompt(ask)
     .then(response => {
       const query = `INSERT INTO department (name) VALUES (?)`;
-      connection.query(query, [response.name], (err, res) => {
-        if (err) throw err;
+      connection.query(query, [response.name], (error, res) => {
+        if (error) throw error;
       console.log(`Added ${response.name} department at id ${res.insertId}`);
       newPrompt();
     });
   })
     .catch(err => {
-      console.error(err);
+      console.error(error);
     });
 };
 
@@ -288,7 +288,7 @@ const addNewDepartment = () => {
       departments.push(queryObj);
     });
 
-    let questions = [
+    let ask = [
       {
         type: "input",
         name: "title",
@@ -307,7 +307,7 @@ const addNewDepartment = () => {
       }
     ];
 
-    inquirer.prompt(questions)
+    inquirer.prompt(ask)
     .then(response => {
       const query = `INSERT INTO ROLE (title, salary, department_id) VALUES (?)`;
       connection.query(query, [[response.title, response.salary, response.department]], (error, res) => {
@@ -328,7 +328,7 @@ const addNewEmployee = () => {
 
   connection.query("SELECT * FROM EMPLOYEE", (error, employeeRes) => {
     if (error) throw error;
-    let employeeChoice = [
+    let eChoice = [
       {
         name: 'None',
         value: 0
@@ -336,7 +336,7 @@ const addNewEmployee = () => {
     ];
 
     employeeRes.forEach(({ first_name, last_name, id }) => {
-      employeeChoice.push({
+      eChoice.push({
         name: first_name + " " + last_name,
         value: id
       });
@@ -353,7 +353,7 @@ const addNewEmployee = () => {
           });
         });
      
-      let questions = [
+      let ask = [
         {
           type: "input",
           name: "first_name",
@@ -373,12 +373,12 @@ const addNewEmployee = () => {
         {
           type: "list",
           name: "manager_id",
-          choices: employeeChoice,
+          choices: eChoice,
           message: "Who is the Employee's manager?"
         }
       ]
   
-      inquirer.prompt(questions)
+      inquirer.prompt(ask)
         .then(response => {
           let query = `INSERT INTO EMPLOYEE (first_name, last_name, role_id, manager_id) VALUES (?)`;
           let manager_id = response.manager_id !== 0? response.manager_id: null;
@@ -398,32 +398,31 @@ const addNewEmployee = () => {
 //  Change Employee Role
 
 const updateRole = () => {
-  
-  connection.query("SELECT * FROM EMPLOYEE", (error, employeeRes) => {
+    connection.query("SELECT * FROM EMPLOYEE", (error, employeeRes) => {
     if (error) throw error;
-    let employeeChoice = [];
+    let eChoice = [];
     employeeRes.forEach(({ first_name, last_name, id }) => {
-      employeeChoice.push({
+      eChoice.push({
         name: first_name + " " + last_name,
         value: id
       });
     });
     
-     connection.query("SELECT * FROM ROLE", (error, rolRes) => {
+     connection.query("SELECT * FROM ROLE", (error, roleRes) => {
       if (error) throw error;
       let roleChoice = [];
-      rolRes.forEach(({ title, id }) => {
+      roleRes.forEach(({ title, id }) => {
         roleChoice.push({
           name: title,
           value: id
           });
         });
      
-      let questions = [
+      let ask = [
         {
           type: "list",
           name: "id",
-          choices: employeeChoice,
+          choices: eChoice,
           message: "Whose role do you want to update?"
         },
         {
@@ -434,7 +433,7 @@ const updateRole = () => {
         }
       ]
   
-      inquirer.prompt(questions)
+      inquirer.prompt(ask)
         .then(response => {
           const query = `UPDATE EMPLOYEE SET ? WHERE ?? = ?;`;
           connection.query(query, [
@@ -456,12 +455,13 @@ const updateRole = () => {
 }
       
 // Change Employee's Manager":
-   const updateManager = ()=> {
+
+const updateManager = ()=> {
   connection.query("SELECT * FROM EMPLOYEE", (error, employeeRes) => {
-    if (error) throw err;
-    let employeeChoice = [];
+    if (error) throw error;
+    const eChoice = [];
     employeeRes.forEach(({ first_name, last_name, id }) => {
-      employeeChoice.push({
+      eChoice.push({
         name: first_name + " " + last_name,
         value: id
       });
@@ -471,7 +471,7 @@ const updateRole = () => {
       name: 'None',
       value: 0
     }];
-
+    
     employeeRes.forEach(({ first_name, last_name, id }) => {
       managerChoice.push({
         name: first_name + " " + last_name,
@@ -479,24 +479,24 @@ const updateRole = () => {
       });
     });
      
-    let questions = [
+    let ask = [
       {
         type: "list",
         name: "id",
-        choices: employeeChoice,
+        choices: eChoice,
         message: "Who do you want to update?"
       },
       {
         type: "list",
         name: "manager_id",
         choices: managerChoice,
-        message: "Employee's New Manager?"
+        message: "Select New manager?"
       }
     ]
   
-    inquirer.prompt(questions)
+    inquirer.prompt(ask)
       .then(response => {
-        let query = `UPDATE EMPLOYEE SET ? WHERE id = ?;`;
+        const query = `UPDATE EMPLOYEE SET ? WHERE id = ?;`;
         let manager_id = response.manager_id !== 0? response.manager_id: null;
         connection.query(query, [
           {manager_id: manager_id},
@@ -504,7 +504,7 @@ const updateRole = () => {
         ], (error, res) => {
           if (error) throw error;
             
-          console.log("Updated employee's manager");
+          console.log("Updated Employee's Manager");
           newPrompt();
         });
       })
@@ -512,7 +512,9 @@ const updateRole = () => {
         console.error(error);
       });
   })
-};  
+  
+};
+
 
 // Delete Department
       
@@ -529,7 +531,7 @@ const deleteDepartment = () => {
       departments.push(queryObj);
     });
 
-    let questions = [
+    let ask = [
       {
         type: "list",
         name: "id",
@@ -538,7 +540,7 @@ const deleteDepartment = () => {
       }
     ];
 
-    inquirer.prompt(questions)
+    inquirer.prompt(ask)
     .then(response => {
       let query = `DELETE FROM DEPARTMENT WHERE id = ?`;
       connection.query(query, [response.id], (error, res) => {
@@ -565,7 +567,7 @@ const deleteDepartment = () => {
       });
     });
 
-    let questions = [
+    let ask = [
       {
         type: "list",
         name: "id",
@@ -574,7 +576,7 @@ const deleteDepartment = () => {
       }
     ];
 
-    inquirer.prompt(questions)
+    inquirer.prompt(ask)
     .then(response => {
       let query = `DELETE FROM ROLE WHERE id = ?`;
       connection.query(query, [response.id], (error, res) => {
@@ -595,24 +597,24 @@ const deleteEmployee = () => {
   connection.query("SELECT * FROM EMPLOYEE", (error, res) => {
     if (error) throw error;
 
-    const employeeChoice = [];
+    const eChoice = [];
     res.forEach(({ first_name, last_name, id }) => {
-      employeeChoice.push({
+      eChoice.push({
         name: first_name + " " + last_name,
         value: id
       });
     });
 
-    let questions = [
+    let ask = [
       {
         type: "list",
         name: "id",
-        choices: employeeChoice,
+        choices: eChoice,
         message: "What Employee do you want to Delete?"
       }
     ];
 
-    inquirer.prompt(questions)
+    inquirer.prompt(ask)
     .then(response => {
       let query = `DELETE FROM EMPLOYEE WHERE id = ?`;
       connection.query(query, [response.id], (error, res) => {
@@ -629,6 +631,6 @@ const deleteEmployee = () => {
  
 // Exit the application
 function quit() {
-  console.log("Goodbye!");
+  console.log("Log Out");
   process.exit();
 }

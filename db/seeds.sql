@@ -16,7 +16,7 @@ INSERT INTO employee (first_name, last_name, role_id, manager_id)
 VALUES ("Bob", "White", 1, NULL),
     ("Tom", "Cat", 3, 1),
     ("Jerry", "Jones", 1, 1),
-    ("Mickey", "Mouse", 3, 2),
+    ("Mickey", "Mouse", 3, 1),
     ("Minnie", "Mouse", 2, 1);
 
 SELECT * FROM employee;
