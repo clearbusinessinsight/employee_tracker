@@ -2,8 +2,6 @@ const { prompt } = require("inquirer");
 const db = require("./db");
 require("console.table");
 
-init();
-
 // Display logo text, load main prompts
 function init() {
   // loadPrompts();
@@ -15,7 +13,7 @@ function init() {
     choices: ["View Employees", "View Roles", "View Departments", "Add Employee", "Add Role", "Add Department", "Change Employee Role", "Change Employee's Manager", "View Employees by Manager", "Delete Department", "Delete a Role", "Delete an Employee", "View the Budget of a Department", "Quit"]
   }]
   
-  inquier.prompt(startQuestion)
+  inquier.prompt(Questions)
   .then(response => {
     switch (response.action) {
       case "View Employees":
