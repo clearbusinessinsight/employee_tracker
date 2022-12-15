@@ -37,7 +37,7 @@ function newPrompt () {
       "Add Role",
       "Add Department",
       "Change Employee Role",
-      "Change Employee's Manager",
+      "Change Employees Manager",
       "Delete Department",
       "Delete a Role",
       "Delete an Employee",
@@ -171,20 +171,27 @@ const viewEmployeeByManager =  () => {
       .then(response => {
         let manager_id, query;
         if (response.manager_id) {
-          query = `SELECT E.id AS id, E.first_name AS first_name, E.last_name AS last_name, 
-          R.title AS role, D.name AS department, CONCAT(M.first_name, " ", M.last_name) AS manager
-          FROM EMPLOYEE AS E LEFT JOIN ROLE AS R ON E.role_id = R.id
-          LEFT JOIN DEPARTMENT AS D ON R.department_id = D.id
-          LEFT JOIN EMPLOYEE AS M ON E.manager_id = M.id
-          WHERE E.manager_id = ?;`;
+          query = `SELECT Employee.id AS id, 
+                          Employee.first_name AS first_name, 
+                          Employee.last_name AS last_name, 
+                          Role.title AS role, 
+                          Department.name AS department, 
+                          CONCAT(Manager.first_name, " ", Manager.last_name) AS manager
+                  FROM EMPLOYEE AS Employee LEFT JOIN ROLE AS Role ON Employee.role_id = Role.id
+                                            LEFT JOIN DEPARTMENT AS Department ON Role.department_id = Department.id
+                                            LEFT JOIN EMPLOYEE AS Manager ON Employee.manager_id = Manager.id
+                  WHERE E.manager_id = ?;`;
         } else {
           manager_id = null;
-          query = `SELECT E.id AS id, E.first_name AS first_name, E.last_name AS last_name, 
-          R.title AS role, D.name AS department, CONCAT(M.first_name, " ", M.last_name) AS manager
-          FROM EMPLOYEE AS E LEFT JOIN ROLE AS R ON E.role_id = R.id
-          LEFT JOIN DEPARTMENT AS D ON R.department_id = D.id
-          LEFT JOIN EMPLOYEE AS M ON E.manager_id = M.id
-          WHERE E.manager_id is null;`;
+          query = `SELECT Employee.id AS id, 
+                          Employee.first_name AS first_name, 
+                          Employee.last_name AS last_name, 
+                          Role.title AS role, 
+                          Department.name AS department, CONCAT(Manager.first_name, " ", Manager.last_name) AS manager
+                  FROM EMPLOYEE AS Employee LEFT JOIN ROLE AS Role ON Employee.role_id = Role.id
+                                            LEFT JOIN DEPARTMENT AS Department ON Role.department_id = Department.id
+                                            LEFT JOIN EMPLOYEE AS Manager ON Employee.manager_id = Manager.id
+                  WHERE E.manager_id is null;`;
         }
         connection.query(query, [response.manager_id], (err, res) => {
           if (err) throw err;
@@ -197,6 +204,8 @@ const viewEmployeeByManager =  () => {
       }); 
   });
 }
+
+
 
  //View the Budget of a Department
   const viewBudget = () => {
@@ -447,10 +456,10 @@ const updateRole = () => {
       
 // Change Employee's Manager":
    const updateManager = ()=> {
-  connection.query("SELECT * FROM EMPLOYEE", (err, empRes) => {
-    if (err) throw err;
-    const employeeChoice = [];
-    empRes.forEach(({ first_name, last_name, id }) => {
+  connection.query("SELECT * FROM EMPLOYEE", (error, employeeRes) => {
+    if (error) throw err;
+    let employeeChoice = [];
+    employeeRes.forEach(({ first_name, last_name, id }) => {
       employeeChoice.push({
         name: first_name + " " + last_name,
         value: id
@@ -462,7 +471,7 @@ const updateRole = () => {
       value: 0
     }];
 
-    empRes.forEach(({ first_name, last_name, id }) => {
+    employeeRes.forEach(({ first_name, last_name, id }) => {
       managerChoice.push({
         name: first_name + " " + last_name,
         value: id
