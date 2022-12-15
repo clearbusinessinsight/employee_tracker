@@ -97,11 +97,14 @@ function newPrompt () {
 //  View Employee
 const viewEmployee = () => {
   let query;
-  query = `SELECT Employee.id AS id, Employee.first_name AS first_name, Employee.last_name AS last_name, 
-    Role.title AS role, Department.name AS department, CONCAT(Manager.first_name, " ", Manager.last_name) AS manager
-    FROM EMPLOYEE AS Employee LEFT JOIN ROLE AS Role ON Employee.role_id = Role.id
-    LEFT JOIN DEPARTMENT AS Department ON Role.department_id = Department.id
-    LEFT JOIN EMPLOYEE AS Manager ON Employee.manager_id = Manager.id;`;
+  query = `SELECT Employee.id AS id, 
+                  Employee.first_name AS first_name, 
+                  Employee.last_name AS last_name, 
+                  Role.title AS role, 
+                  Department.name AS department, CONCAT(Manager.first_name, " ", Manager.last_name) AS manager
+          FROM EMPLOYEE AS Employee LEFT JOIN ROLE AS Role ON Employee.role_id = Role.id
+                                    LEFT JOIN DEPARTMENT AS Department ON Role.department_id = Department.id
+                                    LEFT JOIN EMPLOYEE AS Manager ON Employee.manager_id = Manager.id;`;
   
   connection.query(query, (err, res) => {
     if (err) throw err;
@@ -129,8 +132,8 @@ query = `SELECT * FROM DEPARTMENT`;
 const viewRole = () => {
   let query;
  query = `SELECT Role.id AS id, title, salary, Department.name AS department
-    FROM ROLE AS Role LEFT JOIN DEPARTMENT AS Department
-    ON Role.department_id = Department.id;`;
+          FROM ROLE AS Role LEFT JOIN DEPARTMENT AS Department
+          ON Role.department_id = Department.id;`;
   
   connection.query(query, (error, res) => {
     if (error) throw error;
@@ -139,7 +142,6 @@ const viewRole = () => {
     newPrompt();
   });
 };
-
 
 //  View Employee by Manager
 
@@ -191,7 +193,7 @@ const viewEmployeeByManager =  () => {
                   FROM EMPLOYEE AS Employee LEFT JOIN ROLE AS Role ON Employee.role_id = Role.id
                                             LEFT JOIN DEPARTMENT AS Department ON Role.department_id = Department.id
                                             LEFT JOIN EMPLOYEE AS Manager ON Employee.manager_id = Manager.id
-                  WHERE E.manager_id is null;`;
+                  WHERE Employee.manager_id is null;`;
         }
         connection.query(query, [response.manager_id], (err, res) => {
           if (err) throw err;
